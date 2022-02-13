@@ -1,0 +1,109 @@
+#!/usr/bin/expect
+#scp 传输打包过的文件,自动提交密码，使用except
+#用户名
+set username "smart"
+#密码
+set password "sf-4000361515"
+set root_password "su-4000361515"
+#路径
+set path "/home/smart"
+#远程执行命令
+ set command "bash exec.sh"
+#最大传输机器数
+set numbers 100
+#本机IP
+set localIP "192.10.10.71"
+#一区服务器IP
+array set  IP1_Array_f { 1 192.10.10.10 2  192.10.10.20 3 192.10.10.30 4 192.10.10.40  5 192.10.10.70 6 192.10.10.80 7 ""}
+#二区服务器IP
+array set IP2_Array_f { 1 192.10.20.50 2 192.10.20.60  3 ""}
+#一区工作站IP
+array set IP1_Array_g { 1 192.10.10.31 2 192.10.10.32 3 192.10.10.33 4 192.10.10.71  5  ""}
+
+set timeout 5
+#scp传输文件
+
+proc trans {ip username password   path command} {
+  puts "$username@$ip"
+    spawn  ssh -X $username@$ip 
+    expect {
+      "assword*" {
+      send "$password\n"
+      }
+    }
+    
+    
+    #进入路径
+    expect {
+      "smart*" {
+        send "cd $path\n"
+      }
+    }
+
+   #执行命令
+   expect {
+      "*$path*" {
+        send "$command\n"
+      }
+    }
+
+ interact
+}
+
+#一区服务器
+for {set index 1} {$index < $numbers} {incr index} {
+  if { $IP1_Array_f($index) == $localIP } {
+    continue
+      } else {
+        if {  $IP1_Array_f($index) !=  ""} {
+          trans $IP1_Array_f($index)   $username $password  $path $command 
+  
+  
+           } else { 
+               break
+                 }
+  }
+     }
+# 二区服务器
+for {set index 1} {$index < $numbers} {incr index} {
+  if { $IP2_Array_f($index) == $localIP } {
+    continue
+      } else {
+        if {  $IP2_Array_f($index) !=  ""} {
+          trans $IP2_Array_f($index)   $username $password  $path $command 
+  
+  
+           } else { 
+               break
+                 }
+  }
+     }
+
+#一区工作站
+for {set index 1} {$index < $numbers} {incr index} {
+  if { $IP1_Array_g($index) == $localIP } {
+    continue
+      } else {
+        if {  $IP1_Array_g($index) !=  ""} {
+          trans $IP1_Array_g($index)   $username $password  $path $command 
+  
+  
+           } else { 
+               break
+                 }
+  }
+     }
+
+
+
+
+
+
+    
+   
+
+
+
+
+
+ 

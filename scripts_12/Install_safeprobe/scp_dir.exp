@@ -1,0 +1,94 @@
+#!/usr/bin/expect
+#scp 传输打包过的文件,自动提交密码，使用except
+#用户名
+set username "smart"
+#密码
+set password "sf-4000361515"
+#待传输的文件路径
+ set tar_Path  "/home/smart/Desktop/scripts_12/Install_safeprobe/safeprobe"
+set script ""
+#传输文件目的路径
+set dest_path "/home/smart"
+#最大传输机器数
+set numbers 100
+#本机IP
+set localIP "192.10.10.71"
+#一区服务器IP
+array set  IP1_Array_f { 1 192.10.10.10 2  192.10.10.20 3 192.10.10.30 4 192.10.10.40  5 192.10.10.70 6 192.10.10.80 7 ""}
+#二区服务器IP
+array set IP2_Array_f { 1 192.10.20.50 2 192.10.20.60  3 ""}
+#一区工作站IP
+array set IP1_Array_g { 1 192.10.10.31 2 192.10.10.32 3 192.10.10.33 4 192.10.10.71  5  ""}
+set timeout 20
+#scp传输文件
+
+proc trans {ip tar_Path script username password dest_path} {
+  puts "$tar_Path $username@$ip:$dest_path"
+    spawn  scp -r $tar_Path $script $username@$ip:$dest_path
+    expect {
+      "(yes/no*)" {
+        send "yes\n"; exp_continue
+      }
+    }
+    expect {
+      "assword*" {
+      send "$password\n"
+      }
+    }
+    expect eof
+}
+
+#一区服务器传输
+for {set index 1} {$index < $numbers} {incr index} {
+  if { $IP1_Array_f($index) ==  $localIP } {
+    continue
+    
+  } else {
+    if {  $IP1_Array_f($index) !=  ""} {
+      trans $IP1_Array_f($index)  $tar_Path $script $username $password $dest_path
+
+       } else { 
+           break
+             }
+            }
+          }
+
+
+
+
+#二区服务器传输
+for {set index 1} {$index < $numbers} {incr index} {
+  if { $IP2_Array_f($index) ==  $localIP } {
+    continue
+    
+  } else {
+    if {  $IP2_Array_f($index) !=  ""} {
+      trans $IP2_Array_f($index)  $tar_Path $script $username $password $dest_path
+
+       } else { 
+           break
+             }
+
+}
+}
+#一区工作站传输
+for {set index 1} {$index < $numbers} {incr index} {
+  if { $IP1_Array_g($index) ==  $localIP } {
+    continue
+    
+  } else {
+    if {  $IP1_Array_g($index) !=  ""} {
+      trans $IP1_Array_g($index)  $tar_Path $script $username $password $dest_path
+
+       } else { 
+           break
+             }
+
+}
+}
+
+
+
+
+
+ 

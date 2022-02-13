@@ -1,0 +1,82 @@
+#!/bin/bash
+	### BEGIN INIT INFO
+	# Provides:          remove_built-in_cdrom_6.0.sh
+	# Required-Start:  $network $remote_fs $syslog
+	# Required-Stop:   $network $remote_fs $syslog
+	# Default-Start:   2 3 4 5
+	# Default-Stop: 
+	# Short-Description: remove built-in cdrom.
+	### END INIT INFO
+
+	PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
+
+	. /lib/lsb/init-functions
+
+function log_my_msg()
+{
+	echo -e -n "\033[32m $1 ... \033[0m "
+}
+
+function log_my_end_msg() 
+{
+	if [ $1 = "0" ];then
+		echo -e "\033[32m [ok] \033[0m "
+	else
+		echo -e "\033[31m [failed] \033[0m "
+	fi
+}
+
+function remove_cdrom() 
+{
+	log_my_msg "closing cdrom..."
+	cd /sys/class/scsi_device
+	DEVICE=$(lsscsi | grep sr0 | awk '{print $1}' | sed  's/\[//g' | sed 's/\]//g')
+	if [ ! -z "$DEVICE" ];then 
+		A=${DEVICE#*:}
+		echo ${A//:/ } > /etc/.cdrom_id
+		echo 1 > /sys/class/scsi_device/${DEVICE}/device/delete
+		systemctl enable remove_built-in_cdrom
+		logger -p "local0.notice" -t "[CDROM]" "close CDROM success!"
+		log_my_end_msg 0
+	else
+		log_my_msg "cdrom is already closed..."
+		logger -p "local0.notice" -t "[CDROM]" "CDROM is already closed!"
+		log_my_end_msg 1
+	fi
+}
+
+function load_cdrom() 
+{
+	cd /sys/class/scsi_host/
+	DEVICE=$(ls )	
+	read A < /etc/.cdrom_id
+	if [ ! -z "$A" ];then
+		log_my_msg "opening cdrom..."
+		for i in $DEVICE
+		do
+			echo "$A" > $i/scan
+		done
+		systemctl disable remove_built-in_cdrom
+		logger -p "local0.notice" -t "[CDROM]" "load CDROM success!"
+		log_my_end_msg 0
+		return 0
+	else
+		log_my_msg "cdrom loading is failed..."
+		logger -p "local0.notice" -t "[CDROM]" "load CDROM failed!"
+		log_my_end_msg 1
+		return 1
+	fi
+}
+
+case "$1" in
+    	start)
+		remove_cdrom
+		;;
+    	stop)
+		load_cdrom
+		;;
+    	*)
+		echo "Usage: $0 {start|stop}"
+		exit 2
+		;;
+esac

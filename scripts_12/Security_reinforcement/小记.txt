@@ -1,0 +1,16 @@
+删除默认路由
+root权限删除默认路由 route del default
+
+关闭5432端口
+iptables -A INPUT -p tcp --dport 5432 -j DROP
+ 
+iptables -A OUTPUT -p tcp --dport 5432 -j DROP
+想要实现开机就禁用的话  就把这两句话写在/etc/rc.local里
+
+
+
+
+开启：iptables -D INPUT 1
+ iptables -D OUTPUT 1
+
+

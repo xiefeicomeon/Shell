@@ -1,0 +1,7 @@
+1  加固脚本分为简易版和完整版，建议使用完整版加固
+2  把Linx80-complete-security-config_1.5_amd64.deb拷贝到work文件夹下
+3  root终端进入到work文件夹，使用dpkg -i Linx80-complete-security-config_1.5_amd64.deb安装
+4  完成后，执行opt下的脚本，输入/opt/security/complete_security_config.sh
+5  输入config为开始安全加固
+   输入ecover为恢复到加固前的状态
+   输入status为查看当前加固状态

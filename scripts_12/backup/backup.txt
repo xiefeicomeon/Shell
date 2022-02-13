@@ -1,0 +1,3 @@
+/home/smart/A5000_MAMS,conf-new;
+/home/smart/A5000_MAMS,data-new;
+

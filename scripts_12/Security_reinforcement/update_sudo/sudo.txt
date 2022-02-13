@@ -1,0 +1,1 @@
+setcap "cap_dac_override,cap_setgid,cap_setuid,cap_setpcap,cap_audit_write+ep" /usr/bin/sudo
